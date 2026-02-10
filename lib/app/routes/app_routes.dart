@@ -9,4 +9,5 @@ abstract class Routes {
   static const PROFILE = '/profile';
   static const LOGIN = '/auth/login';
   static const REGISTER = '/auth/register';
+  static const MAIN_NAV = '/main-nav';
 }

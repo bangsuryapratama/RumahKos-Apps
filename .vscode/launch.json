@@ -1,0 +1,28 @@
+{
+ "version": "0.2.0",
+ "configurations": [
+  {
+   "name": "rumahkosapps",
+   "request": "launch",
+   "type": "dart"
+  },
+  {
+   "name": "rumahkosapps (profile mode)",
+   "request": "launch",
+   "type": "dart",
+   "flutterMode": "profile"
+  },
+  {
+   "name": "rumahkosapps (release mode)",
+   "request": "launch",
+   "type": "dart",
+   "flutterMode": "release"
+  },
+  {
+   "name": "rumahkosapps (Flutter)",
+   "program": "lib/main.dart",
+   "request": "launch",
+   "type": "dart"
+  }
+ ]
+}

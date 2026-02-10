@@ -33,9 +33,9 @@ class SplashController extends GetxController {
     final token = box.read('token');
 
     if (token != null && token.toString().isNotEmpty) {
-      Get.offAllNamed(Routes.DASHBOARD);
+      Get.offAllNamed(Routes.MAIN_NAV);
     } else {
-      Get.offAllNamed(Routes.LOGIN);
+      Get.offAllNamed(Routes.AUTH);
     }
   }
 }
