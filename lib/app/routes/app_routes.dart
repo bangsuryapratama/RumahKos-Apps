@@ -10,4 +10,6 @@ abstract class Routes {
   static const LOGIN = '/auth/login';
   static const REGISTER = '/auth/register';
   static const MAIN_NAV = '/main-nav';
+  static const INFOKOS = '/infokos';
+  static const TRANSACTION = '/transaction';
 }

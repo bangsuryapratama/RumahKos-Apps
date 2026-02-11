@@ -40,8 +40,10 @@ class MainNavView extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(0, Icons.grid_view_rounded, "Home", activeColor),
-            _buildNavItem(1, Icons.person_rounded, "Profile", activeColor),
+            _buildNavItem(0, Icons.grid_view_rounded, "Beranda", activeColor),
+            _buildNavItem(1, Icons.info_outline_rounded, "Info Kos", activeColor),
+            _buildNavItem(2, Icons.payment_outlined, "Transaksi", activeColor),
+            _buildNavItem(3, Icons.person_outline_rounded, "Profile", activeColor),
           ],
         ),
       ),

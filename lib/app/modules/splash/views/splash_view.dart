@@ -3,232 +3,142 @@ import 'package:get/get.dart';
 import '../controllers/splash_controller.dart';
 
 class SplashView extends GetView<SplashController> {
-  SplashView({Key? key}) : super(key: key);
+  const SplashView({super.key});
+
+  static const primaryBlue = Color(0xFF2563EB);
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isSmallScreen = size.width < 360 || size.height < 640;
+    final isTablet = size.width > 600;
+
+    final logoSize = isTablet ? 70.0 : 52.0;
+    final titleSize = isTablet ? 42.0 : 30.0;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1E40AF),
-              Color(0xFF2563EB),
-              Color(0xFF3B82F6),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isSmallScreen ? 16 : 20,
-                        vertical: 16,
-                      ),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            flex: isSmallScreen ? 6 : 7,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildAnimatedLogo(isSmallScreen),
-                                  SizedBox(height: isSmallScreen ? 20 : 30),
-                                  _buildTitleSection(isSmallScreen),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: _buildLoadingSection(),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: _buildBottomSection(isSmallScreen),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
 
-  Widget _buildAnimatedLogo(bool isSmallScreen) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 1500),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Transform.rotate(
-            angle: (1 - value) * 1.5,
-            child: Hero(
-              tag: 'rumahkos_logo',
-              child: Container(
-                padding: EdgeInsets.all(isSmallScreen ? 18 : 22),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 25,
-                      offset: const Offset(0, 15),
-                    ),
+      
+          Positioned(
+            top: -size.height * 0.15,
+            left: -size.width * 0.2,
+            child: Container(
+              width: size.width * 0.9,
+              height: size.width * 0.9,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    primaryBlue.withOpacity(0.08),
+                    Colors.transparent,
                   ],
                 ),
-                child: Icon(
-                  Icons.home_rounded,
-                  size: isSmallScreen ? 40 : 50,
-                  color: const Color(0xFF2563EB),
-                ),
               ),
             ),
           ),
-        );
-      },
-    );
-  }
 
-  Widget _buildTitleSection(bool isSmallScreen) {
-    return TweenAnimationBuilder<Offset>(
-      duration: const Duration(milliseconds: 1200),
-      tween: Tween(begin: const Offset(0, 50), end: const Offset(0, 0)),
-      curve: Curves.easeOutBack,
-      builder: (context, offset, child) {
-        return Transform.translate(
-          offset: offset,
-          child: Opacity(
-            opacity: offset == const Offset(0, 0) ? 1.0 : 0.0,
-            child: Column(
-              children: [
-                Text(
-                  'RumahKos',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 28 : 34,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
+          /// MAIN CONTENT
+          Center(
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              tween: Tween(begin: 0, end: 1),
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: Transform.scale(
+                    scale: 0.95 + (0.05 * value),
+                    child: child,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Cari kos nyaman & terpercaya',
-                  style: TextStyle(
-                    fontSize: isSmallScreen ? 14 : 18,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isSmallScreen ? 14 : 20,
-                    vertical: isSmallScreen ? 6 : 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Text(
-                    'Temukan hunian terbaik untukmu',
-                    style: TextStyle(
-                      fontSize: isSmallScreen ? 12 : 14,
+                );
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  /// LOGO
+                  Container(
+                    width: logoSize,
+                    height: logoSize,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
                       color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 30,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 28),
+
+                  /// TITLE
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -1,
+                        color: Colors.black,
+                      ),
+                      children: const [
+                        TextSpan(text: 'Rumah'),
+                        TextSpan(
+                          text: 'Kos',
+                          style: TextStyle(
+                            color: primaryBlue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  /// TAGLINE
+                  Text(
+                    "Temukan hunian terbaikmu",
+                    style: TextStyle(
+                      fontSize: isTablet ? 18 : 14,
+                      color: Colors.grey.shade600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        );
-      },
-    );
-  }
 
-  Widget _buildLoadingSection() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          'Menyiapkan hunian terbaik...',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 280),
-          height: 6,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Obx(
-            () => Align(
-              alignment: Alignment.centerLeft,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 100),
-                width: 280 * controller.progress.value,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+          /// PROGRESS BAR
+          Positioned(
+            bottom: 50,
+            left: size.width * 0.15,
+            right: size.width * 0.15,
+            child: Obx(
+              () => ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: LinearProgressIndicator(
+                  value: controller.progress.value,
+                  minHeight: 6,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor:
+                      const AlwaysStoppedAnimation(primaryBlue),
                 ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Obx(
-          () => Text(
-            '${(controller.progress.value * 100).toInt()}%',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomSection(bool isSmallScreen) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text(
-          'Version 1.0.0',
-          style: TextStyle(
-            color: Colors.white54,
-            fontSize: isSmallScreen ? 10 : 12,
-          ),
-        ),
-        const SizedBox(height: 8),
-      ],
+        ],
+      ),
     );
   }
 }

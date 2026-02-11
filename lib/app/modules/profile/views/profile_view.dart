@@ -5,437 +5,310 @@ import '../controllers/profile_controller.dart';
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
 
+  // Theme Colors (Konsisten dengan Branding RumahKos)
+  static const Color primaryBlue = Color(0xFF2563EB);
+  static const Color slate900 = Color(0xFF1E293B);
+  static const Color slate500 = Color(0xFF64748B);
+  static const Color slate100 = Color(0xFFF1F5F9);
+  static const Color cardBorder = Color(0xFFE2E8F0);
+  static const Color white = Colors.white;
+
   @override
   Widget build(BuildContext context) {
+    // Memastikan responsivitas
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = screenWidth < 360;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          "Profile",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Profile Header
-            Container(
-              width: double.infinity,
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Column(
-                children: [
-                  // Avatar
-                  Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.grey.shade200,
-                            width: 2,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.blue.shade100,
-                          child: Obx(() {
-                            final initial = controller.name.value.isNotEmpty
-                                ? controller.name.value[0].toUpperCase()
-                                : 'U';
-                            return Text(
-                              initial,
-                              style: const TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: GestureDetector(
-                          onTap: () {
-                            // TODO: Add image picker functionality
-                            Get.snackbar(
-                              'Coming Soon',
-                              'Change photo feature will be available soon',
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Colors.blue,
-                              colorText: Colors.white,
-                              margin: const EdgeInsets.all(16),
-                              borderRadius: 8,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF1E3A8A),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Name
-                  Obx(
-                    () => Text(
-                      controller.name.value.isEmpty ? 'User' : controller.name.value,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Role Badge
-                  Obx(
-                    () => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: controller.role.value.toLowerCase() == 'admin'
-                            ? Colors.purple.shade50
-                            : Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        controller.role.value.isEmpty
-                            ? 'TENANT'
-                            : controller.role.value.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: controller.role.value.toLowerCase() == 'admin'
-                              ? Colors.purple.shade700
-                              : Colors.blue.shade700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Edit Profile Button
-                  ElevatedButton(
-                    onPressed: () {
-                      Get.toNamed('/edit-profile');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E3A8A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      "Edit Profile",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // User Info Card
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+      backgroundColor: slate100,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(context),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Contact Information',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                  const SizedBox(height: 24),
+                  _buildSectionLabel("INFORMASI HUNIAN"),
+                  const SizedBox(height: 16),
+                  _buildUnitStatusCard(isSmallScreen),
+                  const SizedBox(height: 32),
+                  _buildSectionLabel("PENGATURAN AKUN"),
+                  const SizedBox(height: 16),
+                  _buildMenuSection(),
+                  const SizedBox(height: 32),
+                  _buildSectionLabel("SISTEM"),
+                  const SizedBox(height: 16),
+                  _buildDangerZone(),
+                  const SizedBox(height: 40),
+                  Center(
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Text(
+                        "RumahKos Pro v1.0.0",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: slate500,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildInfoRow(
-                    icon: Icons.email_outlined,
-                    label: 'Email',
-                    value: controller.email,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInfoRow(
-                    icon: Icons.phone_android_outlined,
-                    label: 'Phone',
-                    value: controller.phone,
-                  ),
+                  const SizedBox(height: 50),
                 ],
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            // Menu Items
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  _buildMenuItem(
-                    icon: Icons.settings_outlined,
-                    title: "Settings",
-                    onTap: () {
-                      Get.snackbar(
-                        'Coming Soon',
-                        'Settings feature will be available soon',
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.history,
-                    title: "My Bookings",
-                    onTap: () {
-                      Get.snackbar(
-                        'Coming Soon',
-                        'Booking history will be available soon',
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.notifications_outlined,
-                    title: "Notifications",
-                    onTap: () {
-                      Get.snackbar(
-                        'Coming Soon',
-                        'Notifications feature will be available soon',
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.help_outline,
-                    title: "Help & Support",
-                    onTap: () {
-                      Get.snackbar(
-                        'Coming Soon',
-                        'Help & Support will be available soon',
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.info_outline,
-                    title: "About",
-                    onTap: () {
-                      Get.dialog(
-                        AlertDialog(
-                          title: const Text('About RumahKos'),
-                          content: const Text(
-                            'RumahKos App v1.0.0\n\nFind your perfect boarding house with ease.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Get.back(),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  _buildDivider(),
-                  _buildMenuItem(
-                    icon: Icons.logout,
-                    title: "Log out",
-                    onTap: () => _showLogoutDialog(),
-                    textColor: Colors.red,
-                    iconColor: Colors.red,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // App Version
-            Text(
-              'RumahKos v1.0.0',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String label,
-    required RxString value,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildSliverAppBar(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 280,
+      pinned: true,
+      stretch: true,
+      backgroundColor: primaryBlue,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryBlue, Color(0xFF1E40AF)],
+            ),
           ),
-          child: Icon(icon, color: Colors.blue, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 12,
-                ),
+              // Pattern dekoratif
+              Positioned(
+                right: -50,
+                top: -50,
+                child: CircleAvatar(radius: 100, backgroundColor: white.withOpacity(0.05)),
               ),
-              const SizedBox(height: 2),
-              Obx(
-                () => Text(
-                  value.value.isEmpty ? '-' : value.value,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
+                  _buildModernAvatar(),
+                  const SizedBox(height: 16),
+                  Obx(() => Text(
+                        controller.name.value.isEmpty ? "User RumahKos" : controller.name.value,
+                        style: const TextStyle(
+                          color: white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      )),
+                  const SizedBox(height: 4),
+                  Obx(() => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          controller.role.value.toUpperCase(),
+                          style: const TextStyle(
+                            color: white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      )),
+                ],
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildMenuItem({
+  Widget _buildModernAvatar() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: const BoxDecoration(
+        color: white,
+        shape: BoxShape.circle,
+      ),
+      child: Obx(() {
+        final initial = controller.name.value.isNotEmpty ? controller.name.value[0].toUpperCase() : "U";
+        return CircleAvatar(
+          radius: 45,
+          backgroundColor: slate100,
+          child: Text(
+            initial,
+            style: const TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+              color: primaryBlue,
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildUnitStatusCard(bool isSmall) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          _unitBadge(Icons.meeting_room_rounded, "A-12", "Unit Kamar"),
+          Container(width: 1, height: 40, color: cardBorder, margin: const EdgeInsets.symmetric(horizontal: 20)),
+          _unitBadge(Icons.verified_rounded, "AKTIF", "Status Sewa", color: Colors.green),
+        ],
+      ),
+    );
+  }
+
+  Widget _unitBadge(IconData icon, String val, String label, {Color color = primaryBlue}) {
+    return Expanded(
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(val, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: slate900)),
+              Text(label, style: const TextStyle(fontSize: 10, color: slate500, fontWeight: FontWeight.bold)),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cardBorder),
+      ),
+      child: Column(
+        children: [
+          _buildMenuTile(
+            icon: Icons.person_outline_rounded,
+            title: "Data Pribadi",
+            onTap: () => Get.toNamed('/edit-profile'),
+          ),
+          _divider(),
+          _buildMenuTile(
+            icon: Icons.history_rounded,
+            title: "Riwayat Pembayaran",
+            onTap: () {},
+          ),
+          _divider(),
+          _buildMenuTile(
+            icon: Icons.security_rounded,
+            title: "Keamanan Akun",
+            onTap: () {},
+          ),
+          _divider(),
+          _buildMenuTile(
+            icon: Icons.notifications_none_rounded,
+            title: "Pengaturan Notifikasi",
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDangerZone() {
+    return Container(
+      decoration: BoxDecoration(
+        color: white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cardBorder),
+      ),
+      child: _buildMenuTile(
+        icon: Icons.logout_rounded,
+        title: "Keluar Akun",
+        isDanger: true,
+        onTap: () => controller.logout(),
+      ),
+    );
+  }
+
+  Widget _buildMenuTile({
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Color? textColor,
-    Color? iconColor,
+    bool isDanger = false,
   }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Icon(
-        icon,
-        color: iconColor ?? Colors.black87,
-        size: 24,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: textColor ?? Colors.black87,
-        ),
-      ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: Colors.grey.shade400,
-      ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 4,
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      color: Colors.grey.shade100,
-      indent: 60,
-    );
-  }
-
-  void _showLogoutDialog() {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Logout',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Get.back(); // Close dialog
-              controller.logout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDanger ? Colors.red.withOpacity(0.08) : primaryBlue.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: isDanger ? Colors.red : primaryBlue, size: 22),
               ),
-            ),
-            child: const Text('Logout'),
+              const SizedBox(width: 16),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDanger ? Colors.red : slate900,
+                ),
+              ),
+              const Spacer(),
+              Icon(Icons.chevron_right_rounded, color: isDanger ? Colors.red.withOpacity(0.3) : slate500.withOpacity(0.3)),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _divider() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Divider(height: 1, color: cardBorder.withOpacity(0.5)),
+      );
+
+  Widget _buildSectionLabel(String label) {
+    return Text(
+      label,
+      style: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        color: slate500,
+        letterSpacing: 1.5,
       ),
     );
   }

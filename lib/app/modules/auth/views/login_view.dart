@@ -1,226 +1,279 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:rumahkosapps/app/routes/app_pages.dart';
 import '../controllers/auth_controller.dart';
 
 class LoginView extends GetView<AuthController> {
   const LoginView({super.key});
 
+  static const primaryBlue = Color(0xFF2563EB);
+
   @override
   Widget build(BuildContext context) {
     const primaryBlue = Color(0xFF2563EB);
 
-    return Column(
-      key: const ValueKey('LoginMode'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Selamat Datang",
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1E293B),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          "Masuk untuk mengelola hunian Anda",
-          style: TextStyle(
-            color: Color(0xFF64748B),
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 32),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
-        // Email
-        _buildLabel("Email"),
-        TextField(
-          controller: controller.emailController,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          decoration: _buildInputDecoration(
-            "contoh@email.com",
-            Icons.email_outlined,
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Password
-        _buildLabel("Password"),
-        Obx(() => TextField(
-          controller: controller.passwordController,
-          obscureText: !controller.isPasswordVisible.value,
-          textInputAction: TextInputAction.done,
-          onSubmitted: (_) => controller.login(),
-          decoration: _buildInputDecoration(
-            "Masukkan password",
-            Icons.lock_outline,
-          ).copyWith(
-            suffixIcon: IconButton(
-              icon: Icon(
-                controller.isPasswordVisible.value
-                    ? Icons.visibility_rounded
-                    : Icons.visibility_off_rounded,
-                color: const Color(0xFF64748B),
-              ),
-              onPressed: () => controller.isPasswordVisible.toggle(),
-            ),
-          ),
-        )),
-
-        const SizedBox(height: 32),
-
-        // Button Login
-        Obx(() => SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: controller.isLoading.value
-                ? null
-                : () => controller.login(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryBlue,
-              disabledBackgroundColor: primaryBlue.withOpacity(0.6),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: controller.isLoading.value
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  )
-                : const Text(
-                    "Masuk",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(width: 16),
+                    RichText(
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                          color: Colors.black,
+                        ),
+                        children: [
+                          TextSpan(text: "Rumah"),
+                          TextSpan(
+                            text: "Kos",
+                            style: TextStyle(
+                              color: primaryBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 48),
+
+                const Text(
+                  "Masuk ke akun Anda",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  "Kelola hunian dan pembayaran dengan mudah",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                /// EMAIL
+                _inputField(
+                  controller: controller.emailController,
+                  hint: "Email",
+                  icon: Icons.email_outlined,
+                ),
+
+                const SizedBox(height: 16),
+
+                /// PASSWORD
+                Obx(() => _inputField(
+                      controller: controller.passwordController,
+                      hint: "Password",
+                      icon: Icons.lock_outline,
+                      obscure: !controller.isPasswordVisible.value,
+                      suffix: IconButton(
+                        icon: Icon(
+                          controller.isPasswordVisible.value
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          size: 20,
+                        ),
+                        onPressed:
+                            () => controller.isPasswordVisible.toggle(),
+                      ),
+                    )),
+
+                const SizedBox(height: 24),
+
+                /// LOGIN BUTTON
+                Obx(() => SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : controller.login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryBlue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: controller.isLoading.value
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                "Masuk",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                      ),
+                    )),
+
+                const SizedBox(height: 24),
+
+                /// DIVIDER
+                Row(
+                  children: const [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        "atau",
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                /// GOOGLE BUTTON
+                Obx(() => SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton.icon(
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : controller.loginWithGoogle,
+                        icon: const FaIcon(
+                          FontAwesomeIcons.google,
+                          size: 18,
+                          // color: Colors.red,
+                        ),
+                        label: const Text(
+                          "Masuk dengan Google",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: Color(0xFFE2E8F0),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                    )),
+
+                const SizedBox(height: 32),
+
+                /// REGISTER LINK
+                Center(
+                  child: GestureDetector(
+                    onTap: () => Get.toNamed(Routes.REGISTER),
+                    child: RichText(
+                      text: const TextSpan(
+                        style: TextStyle(fontSize: 14),
+                        children: [
+                          TextSpan(
+                            text: "Belum punya akun? ",
+                            style: TextStyle(color: Color(0xFF64748B)),
+                          ),
+                          TextSpan(
+                            text: "Daftar",
+                            style: TextStyle(
+                              color: primaryBlue,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-          ),
-        )),
-
-        const SizedBox(height: 24),
-
-        // Divider
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 1,
-                color: const Color(0xFFE2E8F0),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                "Atau masuk dengan",
-                style: TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 14,
                 ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                height: 1,
-                color: const Color(0xFFE2E8F0),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 24),
-
-        // Google Button
-        Obx(() => SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: controller.isLoading.value
-                ? null
-                : () => controller.loginWithGoogle(),
-            icon: Image.network(
-              'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.png',
-              height: 24,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.g_mobiledata_rounded,
-                  size: 32,
-                  color: Color(0xFF1E293B),
-                );
-              },
-            ),
-            label: const Text(
-              "Masuk dengan Google",
-              style: TextStyle(
-                color: Color(0xFF1E293B),
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFFE2E8F0)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              backgroundColor: Colors.white,
+              ],
             ),
           ),
-        )),
-      ],
-    );
-  }
-
-  Widget _buildLabel(String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF1E293B),
-          fontSize: 14,
         ),
       ),
     );
   }
 
-  InputDecoration _buildInputDecoration(String hint, IconData icon) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(
-        color: Color(0xFF94A3B8),
-        fontSize: 15,
-      ),
-      prefixIcon: Icon(icon, color: const Color(0xFF64748B), size: 22),
-      filled: true,
-      fillColor: const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFEF4444)),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+  Widget _inputField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool obscure = false,
+    Widget? suffix,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: Icon(icon, size: 20),
+        suffixIcon: suffix,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+        ),
       ),
     );
   }

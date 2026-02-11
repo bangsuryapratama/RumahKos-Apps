@@ -10,10 +10,12 @@ import '../../../routes/app_pages.dart';
 class AuthController extends GetxController {
   final box = GetStorage();
 
+  // Primary Color - Blue
+  static const primaryColor = Color(0xFF2563EB);
+
   // Initialize GoogleSignIn dengan proper config
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email'],
-
     clientId: 'Y121604383728-3c0fmrf6i6tv6mm3f2nupoenj5751in7.apps.googleusercontent.com',
   );
 
@@ -21,7 +23,7 @@ class AuthController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
-  final phoneController = TextEditingController();
+  // final phoneController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
   // Observable states
@@ -61,7 +63,7 @@ class AuthController extends GetxController {
     emailController.clear();
     passwordController.clear();
     nameController.clear();
-    phoneController.clear();
+    // phoneController.clear();
     confirmPasswordController.clear();
   }
 
@@ -99,7 +101,7 @@ class AuthController extends GetxController {
           "email": emailController.text.trim(),
           "password": passwordController.text,
           "password_confirmation": confirmPasswordController.text,
-          "phone": phoneController.text.trim(),
+          // "phone": phoneController.text.trim(),
         }),
       ),
       isRegister: true,
@@ -156,14 +158,7 @@ class AuthController extends GetxController {
         errorMessage = 'Login Google gagal. Coba lagi';
       }
 
-      Get.snackbar(
-        "Error",
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 3),
-      );
+      _showErrorSnackbar(errorMessage);
 
       debugPrint('Google Sign In Error: ${e.toString()}');
     } finally {
@@ -184,14 +179,7 @@ class AuthController extends GetxController {
       final response = await call();
       _handleResponse(response, isRegister: isRegister);
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Koneksi gagal. Periksa internet Anda",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 3),
-      );
+      _showErrorSnackbar("Koneksi gagal. Periksa internet Anda");
       debugPrint('Auth Error: ${e.toString()}');
     } finally {
       isLoading.value = false;
@@ -208,13 +196,8 @@ class AuthController extends GetxController {
         box.write("token", data["data"]["token"]);
         box.write("user", data["data"]["user"]);
 
-        Get.snackbar(
-          "Berhasil",
+        _showSuccessSnackbar(
           data["message"] ?? (isRegister ? "Registrasi berhasil!" : "Login berhasil!"),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.shade100,
-          colorText: Colors.green.shade900,
-          duration: const Duration(seconds: 2),
         );
 
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -231,58 +214,207 @@ class AuthController extends GetxController {
               : errors.values.first.toString();
         }
 
-        Get.snackbar(
-          "Gagal",
-          errorMsg,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
-          duration: const Duration(seconds: 3),
-        );
+        _showErrorSnackbar(errorMsg);
       }
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Terjadi kesalahan saat memproses response",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-      );
+      _showErrorSnackbar("Terjadi kesalahan saat memproses response");
       debugPrint('Response parsing error: ${e.toString()}');
     }
   }
 
+  // ================= MODERN NOTIFICATION SYSTEM =================
+
+  void _showSuccessSnackbar(String message) {
+    Get.snackbar(
+      "",
+      "",
+      titleText: const SizedBox.shrink(),
+      messageText: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF10B981),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFF065F46),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFD1FAE5),
+      borderRadius: 12,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      duration: const Duration(seconds: 3),
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutBack,
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    Get.snackbar(
+      "",
+      "",
+      titleText: const SizedBox.shrink(),
+      messageText: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.error_rounded,
+              color: Color(0xFFEF4444),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFF991B1B),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFFEE2E2),
+      borderRadius: 12,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      duration: const Duration(seconds: 3),
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutBack,
+    );
+  }
+
+  void _showWarningSnackbar(String message) {
+    Get.snackbar(
+      "",
+      "",
+      titleText: const SizedBox.shrink(),
+      messageText: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.warning_rounded,
+              color: Color(0xFFF59E0B),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFF92400E),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFFEF3C7),
+      borderRadius: 12,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      duration: const Duration(seconds: 3),
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutBack,
+    );
+  }
+
+  void _showInfoSnackbar(String message) {
+    Get.snackbar(
+      "",
+      "",
+      titleText: const SizedBox.shrink(),
+      messageText: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.info_rounded,
+              color: primaryColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFF1E3A8A),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFDBEAFE),
+      borderRadius: 12,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      duration: const Duration(seconds: 3),
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutBack,
+    );
+  }
+
+  // ================= VALIDATION METHODS =================
+
   bool _validateLoginForm() {
     if (emailController.text.trim().isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Email wajib diisi",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Email wajib diisi");
       return false;
     }
 
     if (!GetUtils.isEmail(emailController.text.trim())) {
-      Get.snackbar(
-        "Error",
-        "Format email tidak valid",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Format email tidak valid");
       return false;
     }
 
     if (passwordController.text.isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Password wajib diisi",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Password wajib diisi");
       return false;
     }
 
@@ -291,79 +423,37 @@ class AuthController extends GetxController {
 
   bool _validateRegisterForm() {
     if (nameController.text.trim().isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Nama lengkap wajib diisi",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Nama lengkap wajib diisi");
       return false;
     }
 
     if (emailController.text.trim().isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Email wajib diisi",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Email wajib diisi");
       return false;
     }
 
     if (!GetUtils.isEmail(emailController.text.trim())) {
-      Get.snackbar(
-        "Error",
-        "Format email tidak valid",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Format email tidak valid");
       return false;
     }
 
-    if (phoneController.text.trim().isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Nomor telepon wajib diisi",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
-      return false;
-    }
+    // if (phoneController.text.trim().isEmpty) {
+    //   _showWarningSnackbar("Nomor telepon wajib diisi");
+    //   return false;
+    // }
 
     if (passwordController.text.length < 8) {
-      Get.snackbar(
-        "Error",
-        "Password minimal 8 karakter",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Password minimal 8 karakter");
       return false;
     }
 
     if (passwordController.text != confirmPasswordController.text) {
-      Get.snackbar(
-        "Error",
-        "Konfirmasi password tidak cocok",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      _showWarningSnackbar("Konfirmasi password tidak cocok");
       return false;
     }
 
     if (!agreeToTerms.value) {
-      Get.snackbar(
-        "Info",
-        "Anda harus menyetujui Syarat & Ketentuan",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.blue.shade100,
-        colorText: Colors.blue.shade900,
-      );
+      _showInfoSnackbar("Anda harus menyetujui Syarat & Ketentuan");
       return false;
     }
 
@@ -375,7 +465,7 @@ class AuthController extends GetxController {
     emailController.dispose();
     passwordController.dispose();
     nameController.dispose();
-    phoneController.dispose();
+    // phoneController.dispose();
     confirmPasswordController.dispose();
     super.onClose();
   }

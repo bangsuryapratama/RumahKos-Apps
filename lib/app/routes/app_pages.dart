@@ -1,15 +1,20 @@
 import 'package:get/get.dart';
-import 'package:rumahkosapps/app/modules/profile/bindings/profile_binding.dart';
-import 'package:rumahkosapps/app/modules/profile/views/profile_view.dart';
 
 import '../modules/auth/bindings/auth_binding.dart';
 import '../modules/auth/views/auth_view.dart';
+import '../modules/auth/views/register_view.dart';
 import '../modules/dashboard/bindings/dashboard_binding.dart';
 import '../modules/dashboard/views/dashboard_view.dart';
+import '../modules/infokos/bindings/infokos_binding.dart';
+import '../modules/infokos/views/infokos_view.dart';
 import '../modules/main_nav/bindings/main_nav_binding.dart';
 import '../modules/main_nav/views/main_nav_view.dart';
+import '../modules/profile/bindings/profile_binding.dart';
+import '../modules/profile/views/profile_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
+import '../modules/transaction/bindings/transaction_binding.dart';
+import '../modules/transaction/views/transaction_view.dart';
 
 part 'app_routes.dart';
 
@@ -36,14 +41,28 @@ class AppPages {
     ),
     GetPage(
       name: Routes.MAIN_NAV,
-      page: () =>  MainNavView(),
+      page: () => MainNavView(),
       binding: MainNavBinding(),
     ),
-
     GetPage(
       name: Routes.PROFILE,
-      page: () =>  ProfileView(),
+      page: () => ProfileView(),
       binding: ProfileBinding(),
-    )
+    ),
+    GetPage(
+      name: Routes.REGISTER,
+      page: () => const RegisterView(),
+      binding: AuthBinding(),
+    ),
+    GetPage(
+      name: Routes.INFOKOS,
+      page: () => const InfokosView(),
+      binding: InfokosBinding(),
+    ),
+    GetPage(
+      name: Routes.TRANSACTION,
+      page: () => const TransactionView(),
+      binding: TransactionBinding(),
+    ),
   ];
 }
