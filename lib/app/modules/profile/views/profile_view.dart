@@ -1,127 +1,145 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rumahkosapps/app/core/values/app_colors.dart';
+import 'package:rumahkosapps/app/core/values/app_radius.dart';
+import 'package:rumahkosapps/app/core/values/app_spacing.dart';
+import 'package:rumahkosapps/app/core/values/app_typography.dart';
 import '../controllers/profile_controller.dart';
+
+
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
 
-  // Theme Colors (Konsisten dengan Branding RumahKos)
-  static const Color primaryBlue = Color(0xFF2563EB);
-  static const Color slate900 = Color(0xFF1E293B);
-  static const Color slate500 = Color(0xFF64748B);
-  static const Color slate100 = Color(0xFFF1F5F9);
-  static const Color cardBorder = Color(0xFFE2E8F0);
-  static const Color white = Colors.white;
-
   @override
   Widget build(BuildContext context) {
-    // Memastikan responsivitas
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isSmallScreen = screenWidth < 360;
-
     return Scaffold(
-      backgroundColor: slate100,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildSliverAppBar(context),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  _buildSectionLabel("INFORMASI HUNIAN"),
-                  const SizedBox(height: 16),
-                  _buildUnitStatusCard(isSmallScreen),
-                  const SizedBox(height: 32),
-                  _buildSectionLabel("PENGATURAN AKUN"),
-                  const SizedBox(height: 16),
-                  _buildMenuSection(),
-                  const SizedBox(height: 32),
-                  _buildSectionLabel("SISTEM"),
-                  const SizedBox(height: 16),
-                  _buildDangerZone(),
-                  const SizedBox(height: 40),
-                  Center(
-                    child: Opacity(
-                      opacity: 0.5,
-                      child: Text(
-                        "RumahKos Pro v1.0.0",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: slate500,
+      backgroundColor: AppColors.getBackground(context),
+      body: Obx(() {
+        if (controller.isLoading.value && controller.name.value.isEmpty) {
+          return Center(
+            child: CircularProgressIndicator(color: AppColors.primaryBlue),
+          );
+        }
+
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            _buildSliverAppBar(context),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: AppSpacing.screenPadding(context),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppSpacing.gapXXL,
+                    _buildProfileCompletion(context),
+                    AppSpacing.gapSection,
+                    _buildSectionLabel(context, "DATA PRIBADI"),
+                    AppSpacing.gapLG,
+                    _buildPersonalInfoCard(context),
+                    AppSpacing.gapSection,
+                    _buildSectionLabel(context, "DOKUMEN IDENTITAS"),
+                    AppSpacing.gapLG,
+                    _buildDocumentsCard(context),
+                    AppSpacing.gapSection,
+                    _buildSectionLabel(context, "PENGATURAN AKUN"),
+                    AppSpacing.gapLG,
+                    _buildMenuCard(context),
+                    AppSpacing.gapSection,
+                    _buildSectionLabel(context, "SISTEM"),
+                    AppSpacing.gapLG,
+                    _buildLogoutCard(context),
+                    AppSpacing.gapXXL,
+                    Center(
+                      child: Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          "RumahKos Pro v1.0.0",
+                          style: AppTypography.caption(context),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 50),
-                ],
+                    const SizedBox(height: 50),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // SLIVER APP BAR
+  // ═══════════════════════════════════════════════════════════════
   Widget _buildSliverAppBar(BuildContext context) {
     return SliverAppBar(
       expandedHeight: 280,
       pinned: true,
       stretch: true,
-      backgroundColor: primaryBlue,
+      backgroundColor: AppColors.primaryBlue,
       elevation: 0,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh_rounded),
+          onPressed: () => controller.fetchProfile(),
+          tooltip: 'Refresh',
+        ),
+      ],
       flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+        stretchModes: const [
+          StretchMode.zoomBackground,
+          StretchMode.blurBackground,
+        ],
         background: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [primaryBlue, Color(0xFF1E40AF)],
+              colors: [AppColors.primaryBlue, AppColors.primaryDark],
             ),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Pattern dekoratif
               Positioned(
                 right: -50,
                 top: -50,
-                child: CircleAvatar(radius: 100, backgroundColor: white.withOpacity(0.05)),
+                child: CircleAvatar(
+                  radius: 100,
+                  backgroundColor: Colors.white.withOpacity(0.05),
+                ),
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 40),
-                  _buildModernAvatar(),
-                  const SizedBox(height: 16),
+                  _buildAvatar(context),
+                  AppSpacing.gapLG,
                   Obx(() => Text(
-                        controller.name.value.isEmpty ? "User RumahKos" : controller.name.value,
-                        style: const TextStyle(
-                          color: white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
+                        controller.name.value.isEmpty
+                            ? "User RumahKos"
+                            : controller.name.value,
+                        style: AppTypography.h2Static.copyWith(
+                          color: Colors.white,
                         ),
                       )),
-                  const SizedBox(height: 4),
+                  AppSpacing.gapXXS,
                   Obx(() => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: AppRadius.badgePillRadius,
                         ),
                         child: Text(
                           controller.role.value.toUpperCase(),
-                          style: const TextStyle(
-                            color: white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.2,
+                          style: AppTypography.labelSmallStatic.copyWith(
+                            color: Colors.white,
                           ),
                         ),
                       )),
@@ -134,24 +152,24 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildModernAvatar() {
+  Widget _buildAvatar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: EdgeInsets.all(AppSpacing.xxs),
       decoration: const BoxDecoration(
-        color: white,
+        color: Colors.white,
         shape: BoxShape.circle,
       ),
       child: Obx(() {
-        final initial = controller.name.value.isNotEmpty ? controller.name.value[0].toUpperCase() : "U";
+        final initial = controller.name.value.isNotEmpty
+            ? controller.name.value[0].toUpperCase()
+            : "U";
         return CircleAvatar(
           radius: 45,
-          backgroundColor: slate100,
+          backgroundColor: AppColors.slate100,
           child: Text(
             initial,
-            style: const TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.w900,
-              color: primaryBlue,
+            style: AppTypography.displayMediumStatic.copyWith(
+              color: AppColors.primaryBlue,
             ),
           ),
         );
@@ -159,94 +177,303 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildUnitStatusCard(bool isSmall) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          _unitBadge(Icons.meeting_room_rounded, "A-12", "Unit Kamar"),
-          Container(width: 1, height: 40, color: cardBorder, margin: const EdgeInsets.symmetric(horizontal: 20)),
-          _unitBadge(Icons.verified_rounded, "AKTIF", "Status Sewa", color: Colors.green),
-        ],
-      ),
-    );
-  }
-
-  Widget _unitBadge(IconData icon, String val, String label, {Color color = primaryBlue}) {
-    return Expanded(
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 12),
-          Column(
+  // ═══════════════════════════════════════════════════════════════
+  // PROFILE COMPLETION
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildProfileCompletion(BuildContext context) {
+    return Obx(() => Container(
+          padding: EdgeInsets.all(AppSpacing.cardPadding),
+          decoration: BoxDecoration(
+            color: AppColors.getBackground(context),
+            borderRadius: AppRadius.cardRadius,
+            border: Border.all(color: AppColors.getBorder(context)),
+          ),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(val, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: slate900)),
-              Text(label, style: const TextStyle(fontSize: 10, color: slate500, fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Kelengkapan Profile",
+                    style: AppTypography.h5(context),
+                  ),
+                  Text(
+                    "${controller.completionPercent.value}%",
+                    style: AppTypography.h4Static.copyWith(
+                      color: AppColors.primaryBlue,
+                    ),
+                  ),
+                ],
+              ),
+              AppSpacing.gapMD,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: controller.completionPercent.value / 100,
+                  backgroundColor: AppColors.slate100,
+                  color: AppColors.primaryBlue,
+                  minHeight: 8,
+                ),
+              ),
             ],
-          )
+          ),
+        ));
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // PERSONAL INFO CARD
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildPersonalInfoCard(BuildContext context) {
+    return Obx(() => Container(
+          decoration: BoxDecoration(
+            color: AppColors.getBackground(context),
+            borderRadius: AppRadius.cardRadius,
+            border: Border.all(color: AppColors.getBorder(context)),
+          ),
+          child: Column(
+            children: [
+              _buildInfoRow(
+                context,
+                "Nama",
+                controller.name.value,
+                Icons.person_outline,
+              ),
+              _divider(context),
+              _buildInfoRow(
+                context,
+                "Email",
+                controller.email.value,
+                Icons.email_outlined,
+              ),
+              _divider(context),
+              _buildInfoRow(
+                context,
+                "No. Telepon",
+                controller.phone.value.isEmpty ? "-" : controller.phone.value,
+                Icons.phone_outlined,
+              ),
+              _divider(context),
+              _buildInfoRow(
+                context,
+                "No. KTP",
+                controller.identityNumber.value.isEmpty
+                    ? "-"
+                    : controller.identityNumber.value,
+                Icons.badge_outlined,
+              ),
+              _divider(context),
+              _buildInfoRow(
+                context,
+                "Alamat",
+                controller.address.value.isEmpty ? "-" : controller.address.value,
+                Icons.home_outlined,
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildInfoRow(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon, {
+    int maxLines = 1,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.cardPadding,
+        vertical: AppSpacing.lg,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.primaryBlue, size: 22),
+          AppSpacing.hGapLG,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTypography.caption(context)),
+                AppSpacing.gapXXS,
+                Text(
+                  value,
+                  style: AppTypography.labelMedium(context),
+                  maxLines: maxLines,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMenuSection() {
+  // ═══════════════════════════════════════════════════════════════
+  // DOCUMENTS CARD
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildDocumentsCard(BuildContext context) {
+    return Obx(() => Container(
+          decoration: BoxDecoration(
+            color: AppColors.getBackground(context),
+            borderRadius: AppRadius.cardRadius,
+            border: Border.all(color: AppColors.getBorder(context)),
+          ),
+          child: Column(
+            children: [
+              _buildDocumentRow(
+                context,
+                "KTP",
+                "Kartu Tanda Penduduk",
+                controller.ktpPhoto.value,
+                "ktp_photo",
+                Icons.credit_card,
+              ),
+              _divider(context),
+              _buildDocumentRow(
+                context,
+                "SIM",
+                "Surat Izin Mengemudi",
+                controller.simPhoto.value,
+                "sim_photo",
+                Icons.directions_car,
+              ),
+              _divider(context),
+              _buildDocumentRow(
+                context,
+                "Passport",
+                "Paspor Internasional",
+                controller.passportPhoto.value,
+                "passport_photo",
+                Icons.flight_takeoff,
+              ),
+            ],
+          ),
+        ));
+  }
+
+  Widget _buildDocumentRow(
+    BuildContext context,
+    String title,
+    String subtitle,
+    String imageUrl,
+    String documentType,
+    IconData icon,
+  ) {
+    final bool hasDocument = imageUrl.isNotEmpty;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.cardPadding,
+        vertical: AppSpacing.lg,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(AppSpacing.sm + 2),
+            decoration: BoxDecoration(
+              color: hasDocument
+                  ? AppColors.primaryBlue.withOpacity(0.1)
+                  : AppColors.slate200,
+              borderRadius: AppRadius.iconRadius,
+            ),
+            child: Icon(
+              icon,
+              color: hasDocument ? AppColors.primaryBlue : AppColors.slate400,
+              size: 24,
+            ),
+          ),
+          AppSpacing.hGapLG,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTypography.h5(context)),
+                AppSpacing.gapXXS,
+                Text(
+                  hasDocument ? "Dokumen tersedia" : subtitle,
+                  style: AppTypography.captionStatic.copyWith(
+                    color: hasDocument ? AppColors.success : AppColors.getTextSecondary(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (hasDocument)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
+              onPressed: () => controller.deleteDocument(documentType),
+            ),
+          IconButton(
+            icon: Icon(
+              hasDocument ? Icons.visibility : Icons.upload_file,
+              color: AppColors.primaryBlue,
+              size: 20,
+            ),
+            onPressed: () {
+              if (hasDocument) {
+                Get.snackbar("Info", "Menampilkan dokumen...");
+              } else {
+                controller.uploadDocument(documentType);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MENU CARD
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildMenuCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cardBorder),
+        color: AppColors.getBackground(context),
+        borderRadius: AppRadius.cardRadius,
+        border: Border.all(color: AppColors.getBorder(context)),
       ),
       child: Column(
         children: [
-          _buildMenuTile(
-            icon: Icons.person_outline_rounded,
-            title: "Data Pribadi",
-            onTap: () => Get.toNamed('/edit-profile'),
+          _buildMenuRow(
+            context,
+            icon: Icons.edit_outlined,
+            title: "Edit Profil",
+            onTap: () => Get.snackbar("Info", "Fitur Edit Profil akan segera hadir"),
           ),
-          _divider(),
-          _buildMenuTile(
-            icon: Icons.history_rounded,
-            title: "Riwayat Pembayaran",
-            onTap: () {},
-          ),
-          _divider(),
-          _buildMenuTile(
-            icon: Icons.security_rounded,
+          _divider(context),
+          _buildMenuRow(
+            context,
+            icon: Icons.security_outlined,
             title: "Keamanan Akun",
-            onTap: () {},
+            onTap: () => Get.snackbar("Info", "Fitur Keamanan akan segera hadir"),
           ),
-          _divider(),
-          _buildMenuTile(
-            icon: Icons.notifications_none_rounded,
-            title: "Pengaturan Notifikasi",
-            onTap: () {},
+          _divider(context),
+          _buildMenuRow(
+            context,
+            icon: Icons.notifications_outlined,
+            title: "Notifikasi",
+            onTap: () => Get.snackbar("Info", "Fitur Notifikasi akan segera hadir"),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDangerZone() {
+  // ═══════════════════════════════════════════════════════════════
+  // LOGOUT CARD
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildLogoutCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cardBorder),
+        color: AppColors.getBackground(context),
+        borderRadius: AppRadius.cardRadius,
+        border: Border.all(color: AppColors.getBorder(context)),
       ),
-      child: _buildMenuTile(
+      child: _buildMenuRow(
+        context,
         icon: Icons.logout_rounded,
         title: "Keluar Akun",
         isDanger: true,
@@ -255,40 +482,47 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildMenuTile({
+  Widget _buildMenuRow(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
     bool isDanger = false,
   }) {
+    final color = isDanger ? AppColors.error : AppColors.primaryBlue;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadius.cardRadius,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.cardPadding,
+            vertical: AppSpacing.lg + 2,
+          ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: isDanger ? Colors.red.withOpacity(0.08) : primaryBlue.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
+                  color: color.withOpacity(0.08),
+                  borderRadius: AppRadius.iconRadius,
                 ),
-                child: Icon(icon, color: isDanger ? Colors.red : primaryBlue, size: 22),
+                child: Icon(icon, color: color, size: 22),
               ),
-              const SizedBox(width: 16),
+              AppSpacing.hGapLG,
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isDanger ? Colors.red : slate900,
+                style: AppTypography.h5(context).copyWith(
+                  color: isDanger ? AppColors.error : null,
                 ),
               ),
               const Spacer(),
-              Icon(Icons.chevron_right_rounded, color: isDanger ? Colors.red.withOpacity(0.3) : slate500.withOpacity(0.3)),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.getTextSecondary(context).withOpacity(0.3),
+              ),
             ],
           ),
         ),
@@ -296,20 +530,21 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _divider() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Divider(height: 1, color: cardBorder.withOpacity(0.5)),
+  // ═══════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════════════════════
+  Widget _divider(BuildContext context) => Padding(
+        padding: AppSpacing.horizontalXL,
+        child: Divider(
+          height: 1,
+          color: AppColors.getDivider(context),
+        ),
       );
 
-  Widget _buildSectionLabel(String label) {
+  Widget _buildSectionLabel(BuildContext context, String label) {
     return Text(
       label,
-      style: const TextStyle(
-        fontSize: 10,
-        fontWeight: FontWeight.w900,
-        color: slate500,
-        letterSpacing: 1.5,
-      ),
+      style: AppTypography.sectionHeader(context),
     );
   }
 }

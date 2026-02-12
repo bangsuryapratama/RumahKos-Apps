@@ -1,44 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rumahkosapps/app/core/values/app_colors.dart';
+import 'package:rumahkosapps/app/core/values/app_radius.dart';
+import 'package:rumahkosapps/app/core/values/app_spacing.dart';
+import 'package:rumahkosapps/app/core/values/app_typography.dart';
 import '../controllers/dashboard_controller.dart';
+
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
 
-  // Warna Branding Utama (Solid Branding)
-  static const Color primaryBlue = Color(0xFF2563EB);
-  static const Color slate900 = Color(0xFF1E293B);
-  static const Color slate500 = Color(0xFF64748B);
-
   @override
   Widget build(BuildContext context) {
-    // Kita kunci visualnya agar tetap terlihat premium di berbagai kondisi
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = AppColors.isDark(context);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+      backgroundColor: AppColors.getBackground(context),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          _buildElegantAppBar(context, isDark),
+          _buildAppBar(context, isDark),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: AppSpacing.screenPadding(context),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 10),
-                  _buildMainUnitCard(isDark),
-                  const SizedBox(height: 32),
-                  _buildSectionHeader(context, "LAYANAN PENGHUNI", Icons.grid_view_rounded),
-                  const SizedBox(height: 16),
-                  _buildPremiumServiceGrid(context),
-                  const SizedBox(height: 32),
-                  _buildBillingFocus(context),
-                  const SizedBox(height: 32),
-                  _buildSectionHeader(context, "AKTIVITAS HUNIAN", Icons.history_toggle_off_rounded),
-                  const SizedBox(height: 16),
-                  _buildMinimalistTimeline(context),
+                  AppSpacing.gapMD,
+                  _buildMainUnitCard(context, isDark),
+                  AppSpacing.gapSection,
+                  _buildSectionHeader(
+                    context,
+                    "LAYANAN PENGHUNI",
+                    Icons.grid_view_rounded,
+                  ),
+                  AppSpacing.gapLG,
+                  _buildServiceGrid(context, isDark),
+                  AppSpacing.gapSection,
+                  _buildBillingCard(context, isDark),
+                  AppSpacing.gapSection,
+                  _buildSectionHeader(
+                    context,
+                    "AKTIVITAS HUNIAN",
+                    Icons.history_toggle_off_rounded,
+                  ),
+                  AppSpacing.gapLG,
+                  _buildActivityTimeline(context, isDark),
                   const SizedBox(height: 100),
                 ],
               ),
@@ -49,38 +56,43 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildElegantAppBar(BuildContext context, bool isDark) {
+  // ═══════════════════════════════════════════════════════════════
+  // APP BAR
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildAppBar(BuildContext context, bool isDark) {
     return SliverAppBar(
       expandedHeight: 120,
       floating: true,
       pinned: true,
-      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white.withOpacity(0.9),
+      backgroundColor: AppColors.getSurface(context).withOpacity(0.9),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       automaticallyImplyLeading: false,
-      // Actions dihilangkan agar fokus ke Branding
-      actions: const [
-        SizedBox(width: 24),
-      ],
+      actions: [SizedBox(width: AppSpacing.xl)],
       flexibleSpace: FlexibleSpaceBar(
         background: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 15),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.screenHorizontal(context),
+            0,
+            AppSpacing.screenHorizontal(context),
+            15,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Row(
                 children: [
-                  // LOGO BRANDING
+                  // Logo Container
                   Container(
                     height: 52,
                     width: 52,
-                    padding: const EdgeInsets.all(8),
+                    padding: AppSpacing.allSM,
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF334155) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      color: isDark ? AppColors.darkCard : Colors.white,
+                      borderRadius: AppRadius.cardRadius,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: AppColors.getShadow(context, 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -89,40 +101,36 @@ class DashboardView extends GetView<DashboardController> {
                     child: Image.asset(
                       'assets/images/logo.png',
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.home_work_rounded, color: primaryBlue, size: 28),
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.home_work_rounded,
+                        color: AppColors.primaryBlue,
+                        size: 28,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  AppSpacing.hGapMD,
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       RichText(
                         text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.8,
-                            color: isDark ? Colors.white : slate900,
+                          style: AppTypography.h1Static.copyWith(
+                            color: AppColors.getTextPrimary(context),
                           ),
                           children: const [
                             TextSpan(text: "Rumah"),
                             TextSpan(
                               text: "Kos",
-                              style: TextStyle(color: primaryBlue),
+                              style: TextStyle(color: AppColors.primaryBlue),
                             ),
                           ],
                         ),
                       ),
                       Obx(() => Text(
-                        "Halo, ${controller.name.value} 👋",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white60 : slate500,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )),
+                            "Halo, ${controller.name.value} 👋",
+                            style: AppTypography.bodySmall(context),
+                          )),
                     ],
                   ),
                 ],
@@ -134,21 +142,19 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildMainUnitCard(bool isDark) {
+  // ═══════════════════════════════════════════════════════════════
+  // MAIN UNIT CARD (Hero Card)
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildMainUnitCard(BuildContext context, bool isDark) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(26),
+      padding: EdgeInsets.all(AppSpacing.cardPaddingLarge),
       decoration: BoxDecoration(
-        color: primaryBlue,
-        borderRadius: BorderRadius.circular(32),
-        gradient: const LinearGradient(
-          colors: [primaryBlue, Color(0xFF1D4ED8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppColors.primaryGradient,
+        borderRadius: AppRadius.cardXLRadius,
         boxShadow: [
           BoxShadow(
-            color: primaryBlue.withOpacity(0.3),
+            color: AppColors.primaryBlue.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           )
@@ -162,33 +168,31 @@ class DashboardView extends GetView<DashboardController> {
             children: [
               Text(
                 "DETAIL UNIT AKTIF",
-                style: TextStyle(
+                style: AppTypography.overlineStatic.copyWith(
                   color: Colors.white.withOpacity(0.8),
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
                 ),
               ),
-              const Icon(Icons.verified_user_rounded, color: Colors.white, size: 18),
+              const Icon(
+                Icons.verified_user_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Text(
+          AppSpacing.gapMD,
+          Text(
             "Kamar Deluxe A-12",
-            style: TextStyle(
+            style: AppTypography.h1Static.copyWith(
               color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 24),
+          AppSpacing.gapXXL,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _infoPoint("MASA SEWA", "12 Bulan"),
-              _infoPoint("TIPE", "AC + KM Dalam"),
-              _infoPoint("STATUS", "TERBAYAR"),
+              _buildInfoPoint("MASA SEWA", "12 Bulan"),
+              _buildInfoPoint("TIPE", "AC + KM Dalam"),
+              _buildInfoPoint("STATUS", "TERBAYAR"),
             ],
           ),
         ],
@@ -196,19 +200,32 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _infoPoint(String label, String value) {
+  Widget _buildInfoPoint(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: AppTypography.captionStatic.copyWith(
+            color: Colors.white.withOpacity(0.6),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        AppSpacing.gapXXS,
+        Text(
+          value,
+          style: AppTypography.labelMediumStatic.copyWith(
+            color: Colors.white,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildPremiumServiceGrid(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // ═══════════════════════════════════════════════════════════════
+  // SERVICE GRID
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildServiceGrid(BuildContext context, bool isDark) {
     final List<Map<String, dynamic>> services = [
       {'icon': Icons.payment_rounded, 'label': 'Bayar Kos'},
       {'icon': Icons.cleaning_services_outlined, 'label': 'Request Bersih'},
@@ -221,48 +238,67 @@ class DashboardView extends GetView<DashboardController> {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+        mainAxisSpacing: AppSpacing.gridSpacingMedium,
+        crossAxisSpacing: AppSpacing.gridSpacingMedium,
         childAspectRatio: 1.05,
       ),
       itemCount: services.length,
       itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(services[index]['icon'], color: primaryBlue, size: 26),
-              const SizedBox(height: 10),
-              Text(
-                services[index]['label'],
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : slate900
-                ),
+        return Material(
+          color: AppColors.getBackground(context),
+          borderRadius: AppRadius.cardRadius,
+          child: InkWell(
+            onTap: () {},
+            borderRadius: AppRadius.cardRadius,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: AppRadius.cardRadius,
+                border: Border.all(color: AppColors.getBorder(context)),
               ),
-            ],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    services[index]['icon'],
+                    color: AppColors.primaryBlue,
+                    size: 26,
+                  ),
+                  AppSpacing.gapSM,
+                  Text(
+                    services[index]['label'],
+                    style: AppTypography.labelSmallStatic.copyWith(
+                      color: AppColors.getTextPrimary(context),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildBillingFocus(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // ═══════════════════════════════════════════════════════════════
+  // BILLING CARD
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildBillingCard(BuildContext context, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+        color: AppColors.getBackground(context),
+        borderRadius: AppRadius.cardXLRadius,
+        border: Border.all(color: AppColors.getBorder(context)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.getShadow(context, 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,48 +308,56 @@ class DashboardView extends GetView<DashboardController> {
             children: [
               Text(
                 "Tagihan Bulan Ini",
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : slate900
-                )
+                style: AppTypography.h4(context),
               ),
-              _buildBadge("BELUM LUNAS", Colors.red),
+              _buildBadge("BELUM LUNAS", AppColors.error),
             ],
           ),
-          const SizedBox(height: 20),
+          AppSpacing.gapXL,
           Row(
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Sewa + Listrik", style: TextStyle(color: isDark ? Colors.white60 : slate500, fontSize: 12)),
+                    Text(
+                      "Sewa + Listrik",
+                      style: AppTypography.bodySmall(context),
+                    ),
+                    AppSpacing.gapXXS,
                     Text(
                       "Rp 1.250.000",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: isDark ? Colors.white : slate900
-                      )
+                      style: AppTypography.priceStatic.copyWith(
+                        color: AppColors.getTextPrimary(context),
+                      ),
                     ),
                   ],
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryBlue,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: const Text("Bayar", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-              ),
+              _buildPayButton(context),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPayButton(BuildContext context) {
+    return Material(
+      color: AppColors.primaryBlue,
+      borderRadius: AppRadius.buttonRadius,
+      child: InkWell(
+        onTap: () {},
+        borderRadius: AppRadius.buttonRadius,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Text(
+            "Bayar",
+            style: AppTypography.labelLargeStatic.copyWith(
+              color: Colors.white,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -321,64 +365,83 @@ class DashboardView extends GetView<DashboardController> {
   Widget _buildBadge(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-      child: Text(text, style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w900)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: AppRadius.badgeRadius,
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        text,
+        style: AppTypography.badgeStatic.copyWith(color: color),
+      ),
     );
   }
 
-  Widget _buildMinimalistTimeline(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // ═══════════════════════════════════════════════════════════════
+  // ACTIVITY TIMELINE
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildActivityTimeline(BuildContext context, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+        color: AppColors.getBackground(context),
+        borderRadius: AppRadius.cardXLRadius,
+        border: Border.all(color: AppColors.getBorder(context)),
       ),
       child: Column(
         children: [
-          _timelineRow(context, "Laundry Masuk", "3 Kg pakaian sedang diproses.", true),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Divider(height: 1, color: isDark ? Colors.white10 : const Color(0xFFF1F5F9)),
+          _buildTimelineItem(
+            context,
+            "Laundry Masuk",
+            "3 Kg pakaian sedang diproses.",
+            true,
           ),
-          _timelineRow(context, "Pembayaran Listrik", "Token berhasil diisi oleh admin.", false),
+          Padding(
+            padding: AppSpacing.verticalLG,
+            child: Divider(height: 1, color: AppColors.getDivider(context)),
+          ),
+          _buildTimelineItem(
+            context,
+            "Pembayaran Listrik",
+            "Token berhasil diisi oleh admin.",
+            false,
+          ),
         ],
       ),
     );
   }
 
-  Widget _timelineRow(BuildContext context, String title, String sub, bool isNew) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildTimelineItem(
+    BuildContext context,
+    String title,
+    String subtitle,
+    bool isNew,
+  ) {
     return Row(
       children: [
         Container(
           height: 8,
           width: 8,
           decoration: BoxDecoration(
-            color: isNew ? primaryBlue : (isDark ? Colors.white24 : slate500.withOpacity(0.3)),
+            color: isNew
+                ? AppColors.primaryBlue
+                : AppColors.getTextSecondary(context).withOpacity(0.3),
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 16),
+        AppSpacing.hGapLG,
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: isDark ? Colors.white : slate900
-                )
+                style: AppTypography.labelMedium(context),
               ),
+              AppSpacing.gapXXS,
               Text(
-                sub,
-                style: TextStyle(
-                  color: isDark ? Colors.white60 : slate500,
-                  fontSize: 11
-                )
+                subtitle,
+                style: AppTypography.caption(context),
               ),
             ],
           ),
@@ -387,20 +450,21 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION HEADER
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    IconData icon,
+  ) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: primaryBlue),
-        const SizedBox(width: 8),
+        Icon(icon, size: 18, color: AppColors.primaryBlue),
+        AppSpacing.hGapSM,
         Text(
           title,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-            color: isDark ? Colors.white54 : slate500,
-            letterSpacing: 1.2,
-          ),
+          style: AppTypography.sectionHeader(context),
         ),
       ],
     );

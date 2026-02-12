@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.rumahkosapps"
-        minSdk = 21  // ← UBAH dari flutter.minSdkVersion
+        minSdk = flutter.minSdkVersion  // ← UBAH dari flutter.minSdkVersion
         targetSdk = 34  // ← UBAH dari flutter.targetSdkVersion
         versionCode = 1  // ← UBAH dari flutter.versionCode
         versionName = "1.0"  // ← UBAH dari flutter.versionName

@@ -2,6 +2,14 @@
  "version": "0.2.0",
  "configurations": [
   {
+   "name": "Attach to Chrome",
+   "port": 9222,
+   "request": "attach",
+   "type": "chrome",
+   "webRoot": "${workspaceFolder}"
+  },
+
+  {
    "name": "rumahkosapps",
    "request": "launch",
    "type": "dart"
@@ -23,6 +31,14 @@
    "program": "lib/main.dart",
    "request": "launch",
    "type": "dart"
+  },
+
+  {
+   "name": "rumahkosapps (Chrome)",
+   "request": "launch",
+   "type": "dart",
+   "deviceId": "chrome"
   }
+
  ]
 }
