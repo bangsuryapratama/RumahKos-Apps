@@ -128,7 +128,7 @@ class DashboardView extends GetView<DashboardController> {
                         ),
                       ),
                       Obx(() => Text(
-                            "Halo, ${controller.name.value} 👋",
+                            "Halo, ${controller.name.value} !!",
                             style: AppTypography.bodySmall(context),
                           )),
                     ],

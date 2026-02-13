@@ -1,14 +1,22 @@
 plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")  // ← TAMBAHKAN BARIS INI
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'dev.flutter.flutter-gradle-plugin'
+    id 'com.google.gms.google-services' 
 }
 
 android {
     namespace = "com.example.rumahkosapps"
-    compileSdk = 34  // ← UBAH dari flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.example.rumahkosapps"
+        minSdk = 21
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+        multiDexEnabled = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -16,16 +24,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-
-    defaultConfig {
-        applicationId = "com.example.rumahkosapps"
-        minSdk = flutter.minSdkVersion  // ← UBAH dari flutter.minSdkVersion
-        targetSdk = 34  // ← UBAH dari flutter.targetSdkVersion
-        versionCode = 1  // ← UBAH dari flutter.versionCode
-        versionName = "1.0"  // ← UBAH dari flutter.versionName
-        multiDexEnabled = true  // ← TAMBAHKAN BARIS INI
+        jvmTarget = "11"
     }
 
     buildTypes {
@@ -39,7 +38,7 @@ flutter {
     source = "../.."
 }
 
-// ← TAMBAHKAN SECTION INI
 dependencies {
-    implementation("com.android.support:multidex:1.0.3")
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation "com.google.android.gms:play-services-auth:20.7.0" // Google Sign-In
 }

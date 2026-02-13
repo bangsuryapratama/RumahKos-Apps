@@ -15,10 +15,13 @@
    "type": "dart"
   },
   {
-   "name": "rumahkosapps (profile mode)",
+   "name": "rumahkosapps",
    "request": "launch",
    "type": "dart",
-   "flutterMode": "profile"
+    "args" :[
+     "web-port",
+     "5000"
+    ]
   },
   {
    "name": "rumahkosapps (release mode)",

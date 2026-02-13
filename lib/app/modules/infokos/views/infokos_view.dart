@@ -620,18 +620,6 @@ class InfokosView extends GetView<InfokosController> {
   }
 }
 
-// ══════════════════════════════════════════════════════════
-// _HeroRoomCard — StatefulWidget
-//
-// Strategi:
-//   • Stack: shimmer card di bawah, konten (FadeTransition) di atas
-//   • Image.network pakai frameBuilder:
-//       - frame == null  → gambar belum ada, return SizedBox.shrink
-//                          (shimmer tetap keliatan, konten transparan)
-//       - frame != null  → gambar siap, panggil _onImageReady()
-//                          → shimmer hilang, konten fade in
-//   • Jika roomImage kosong → tidak ada loading, langsung tampil
-// ══════════════════════════════════════════════════════════
 class _HeroRoomCard extends StatefulWidget {
   final bool isDark;
   final bool isTablet;
