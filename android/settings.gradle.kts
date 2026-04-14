@@ -17,10 +17,14 @@ pluginManagement {
 }
 
 plugins {
-    id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.1.1" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.10" apply false
-    id("com.google.gms.google-services") version "4.4.0" apply false
+    // Gunakan flutter-gradle-plugin untuk versi Flutter terbaru
+    id("dev.flutter.flutter-gradle-plugin") version "1.0.0" apply false
+    // AGP 8.9.1 wajib untuk mendukung SDK 36
+    id("com.android.application") version "8.9.1" apply false
+    // Kotlin 2.1.0 untuk kompatibilitas AGP terbaru
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+    // Versi stabil untuk Google Services
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 include(":app")
