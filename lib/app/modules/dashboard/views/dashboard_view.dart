@@ -1,163 +1,198 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rumahkosapps/app/core/values/app_colors.dart';
-import 'package:rumahkosapps/app/core/values/app_radius.dart';
-import 'package:rumahkosapps/app/core/values/app_spacing.dart';
-import 'package:rumahkosapps/app/core/values/app_typography.dart';
+import 'package:intl/intl.dart';
 import '../controllers/dashboard_controller.dart';
-
+import '../../../core/values/app_colors.dart';
+import '../../../routes/app_pages.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
 
+  String _formatCurrency(dynamic amount) {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    return formatter.format(amount ?? 0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark(context);
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth > 600;
 
     return Scaffold(
       backgroundColor: AppColors.getBackground(context),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildAppBar(context, isDark),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: AppSpacing.screenPadding(context),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppSpacing.gapMD,
-                  _buildMainUnitCard(context, isDark),
-                  AppSpacing.gapSection,
-                  _buildSectionHeader(
-                    context,
-                    "LAYANAN PENGHUNI",
-                    Icons.grid_view_rounded,
-                  ),
-                  AppSpacing.gapLG,
-                  _buildServiceGrid(context, isDark),
-                  AppSpacing.gapSection,
-                  _buildBillingCard(context, isDark),
-                  AppSpacing.gapSection,
-                  _buildSectionHeader(
-                    context,
-                    "AKTIVITAS HUNIAN",
-                    Icons.history_toggle_off_rounded,
-                  ),
-                  AppSpacing.gapLG,
-                  _buildActivityTimeline(context, isDark),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // APP BAR
-  // ═══════════════════════════════════════════════════════════════
-  Widget _buildAppBar(BuildContext context, bool isDark) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: true,
-      pinned: true,
-      backgroundColor: AppColors.getSurface(context).withOpacity(0.9),
-      elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      automaticallyImplyLeading: false,
-      actions: [SizedBox(width: AppSpacing.xl)],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.screenHorizontal(context),
-            0,
-            AppSpacing.screenHorizontal(context),
-            15,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Row(
-                children: [
-                  // Logo Container
-                  Container(
-                    height: 52,
-                    width: 52,
-                    padding: AppSpacing.allSM,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkCard : Colors.white,
-                      borderRadius: AppRadius.cardRadius,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.getShadow(context, 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+      body: Obx(() {
+        return RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: controller.fetchDashboard,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? screenWidth * 0.1 : 20,
+                  vertical: 24,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildHeader(context),
+                    const SizedBox(height: 24),
+                    // Kondisional Custom Shimmer vs Konten
+                    controller.isLoading.value 
+                        ? _buildCustomShimmerRoomCard(context) 
+                        : _buildRoomCard(context),
+                    const SizedBox(height: 24),
+                    controller.isLoading.value
+                        ? _buildCustomShimmerStats(context)
+                        : _buildQuickStats(context),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader(
+                      context,
+                      title: "Histori Pembayaran",
+                      onAction: () => Get.toNamed(Routes.TRANSACTION),
                     ),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.home_work_rounded,
-                        color: AppColors.primaryBlue,
-                        size: 28,
-                      ),
-                    ),
-                  ),
-                  AppSpacing.hGapMD,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          style: AppTypography.h1Static.copyWith(
-                            color: AppColors.getTextPrimary(context),
-                          ),
-                          children: const [
-                            TextSpan(text: "Rumah"),
-                            TextSpan(
-                              text: "Kos",
-                              style: TextStyle(color: AppColors.primaryBlue),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Obx(() => Text(
-                            "Halo, ${controller.name.value} !!",
-                            style: AppTypography.bodySmall(context),
-                          )),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    controller.isLoading.value
+                        ? _buildCustomShimmerList(context)
+                        : _buildPaymentList(context),
+                  ]),
+                ),
               ),
             ],
           ),
+        );
+      }),
+    );
+  }
+
+  // ================= CUSTOM SHIMMER COMPONENT (TANPA PACKAGE) =================
+
+  Widget _buildCustomShimmerLoading({required Widget child}) {
+    return _CustomShimmerEffect(child: child);
+  }
+
+  Widget _buildCustomShimmerRoomCard(BuildContext context) {
+    return _buildCustomShimmerLoading(
+      child: Container(
+        height: 160,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(24),
         ),
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // MAIN UNIT CARD (Hero Card)
-  // ═══════════════════════════════════════════════════════════════
-  Widget _buildMainUnitCard(BuildContext context, bool isDark) {
+  Widget _buildCustomShimmerStats(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _buildCustomShimmerLoading(
+          child: Container(height: 110, decoration: BoxDecoration(color: Colors.black.withOpacity(0.05), borderRadius: BorderRadius.circular(20))),
+        )),
+        const SizedBox(width: 16),
+        Expanded(child: _buildCustomShimmerLoading(
+          child: Container(height: 110, decoration: BoxDecoration(color: Colors.black.withOpacity(0.05), borderRadius: BorderRadius.circular(20))),
+        )),
+      ],
+    );
+  }
+
+  Widget _buildCustomShimmerList(BuildContext context) {
+    return Column(
+      children: List.generate(3, (index) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: _buildCustomShimmerLoading(
+          child: Container(
+            height: 80,
+            width: double.infinity,
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.05), borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+      )),
+    );
+  }
+
+  // ================= ORIGINAL WIDGETS =================
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.getSurface(context),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.getShadow(context, 0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Image.asset(
+            "assets/images/logo.png",
+            width: 40,
+            height: 40,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.home_work_rounded,
+              color: AppColors.primary,
+              size: 30,
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "RumahKos Apps",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.getTextTertiary(context),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              Obx(() => controller.isLoading.value 
+                ? _buildCustomShimmerLoading(child: Container(height: 24, width: 150, decoration: BoxDecoration(color: Colors.black.withOpacity(0.05), borderRadius: BorderRadius.circular(4))))
+                : Text(
+                    "Halo, ${controller.name.value}!",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.getTextPrimary(context),
+                    ),
+                  )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoomCard(BuildContext context) {
+    if (!controller.hasKos.value) {
+      return _buildEmptyState(context, "Informasi kos tidak ditemukan.");
+    }
+
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(AppSpacing.cardPaddingLarge),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: AppRadius.cardXLRadius,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.3),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -166,33 +201,46 @@ class DashboardView extends GetView<DashboardController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "DETAIL UNIT AKTIF",
-                style: AppTypography.overlineStatic.copyWith(
-                  color: Colors.white.withOpacity(0.8),
-                ),
+              const Text(
+                "Kamar Saat Ini",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
-              const Icon(
-                Icons.verified_user_rounded,
-                color: Colors.white,
-                size: 18,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  "Tenant",
+                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
-          AppSpacing.gapMD,
+          const SizedBox(height: 16),
           Text(
-            "Kamar Deluxe A-12",
-            style: AppTypography.h1Static.copyWith(
+            controller.roomName.value,
+            style: const TextStyle(
               color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              letterSpacing: -0.5,
             ),
           ),
-          AppSpacing.gapXXL,
+          const SizedBox(height: 6),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildInfoPoint("MASA SEWA", "12 Bulan"),
-              _buildInfoPoint("TIPE", "AC + KM Dalam"),
-              _buildInfoPoint("STATUS", "TERBAYAR"),
+              Icon(Icons.location_pin, color: AppColors.secondary, size: 16),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  controller.property.value,
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
         ],
@@ -200,81 +248,149 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildInfoPoint(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildQuickStats(BuildContext context) {
+    return Row(
       children: [
-        Text(
-          label,
-          style: AppTypography.captionStatic.copyWith(
-            color: Colors.white.withOpacity(0.6),
-            fontWeight: FontWeight.bold,
-          ),
+        _buildStatCard(
+          context,
+          "Pending",
+          controller.pendingCount.value.toString(),
+          Icons.timer_outlined,
+          AppColors.warning,
         ),
-        AppSpacing.gapXXS,
-        Text(
-          value,
-          style: AppTypography.labelMediumStatic.copyWith(
-            color: Colors.white,
-          ),
+        const SizedBox(width: 16),
+        _buildStatCard(
+          context,
+          "Overdue",
+          controller.overdueCount.value.toString(),
+          Icons.error_outline_rounded,
+          AppColors.error,
         ),
       ],
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // SERVICE GRID
-  // ═══════════════════════════════════════════════════════════════
-  Widget _buildServiceGrid(BuildContext context, bool isDark) {
-    final List<Map<String, dynamic>> services = [
-      {'icon': Icons.payment_rounded, 'label': 'Bayar Kos'},
-      {'icon': Icons.cleaning_services_outlined, 'label': 'Request Bersih'},
-      {'icon': Icons.plumbing_rounded, 'label': 'Komplain'},
-      {'icon': Icons.article_outlined, 'label': 'E-Kontrak'},
-      {'icon': Icons.local_laundry_service_outlined, 'label': 'Laundry'},
-      {'icon': Icons.grid_view_rounded, 'label': 'Lainnya'},
-    ];
+  Widget _buildStatCard(BuildContext context, String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.getSurface(context),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.getBorder(context)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.getTextPrimary(context),
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(color: AppColors.getTextSecondary(context), fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-    return GridView.builder(
+  Widget _buildSectionHeader(BuildContext context, {required String title, required VoidCallback onAction}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.getTextPrimary(context),
+          ),
+        ),
+        TextButton(
+          onPressed: onAction,
+          child: const Text("Lihat Riwayat"),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentList(BuildContext context) {
+    if (controller.payments.isEmpty) {
+      return _buildEmptyState(context, "Semua tagihan lunas. Mantap!");
+    }
+
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: AppSpacing.gridSpacingMedium,
-        crossAxisSpacing: AppSpacing.gridSpacingMedium,
-        childAspectRatio: 1.05,
-      ),
-      itemCount: services.length,
+      itemCount: controller.payments.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        return Material(
-          color: AppColors.getBackground(context),
-          borderRadius: AppRadius.cardRadius,
-          child: InkWell(
-            onTap: () {},
-            borderRadius: AppRadius.cardRadius,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: AppRadius.cardRadius,
-                border: Border.all(color: AppColors.getBorder(context)),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    services[index]['icon'],
-                    color: AppColors.primaryBlue,
-                    size: 26,
+        final p = controller.payments[index];
+        final color = AppColors.getStatusColor(p['status']);
+
+        return InkWell(
+          onTap: () => Get.toNamed(Routes.TRANSACTION),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.getSurface(context),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.getBorder(context)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  AppSpacing.gapSM,
-                  Text(
-                    services[index]['label'],
-                    style: AppTypography.labelSmallStatic.copyWith(
-                      color: AppColors.getTextPrimary(context),
-                    ),
-                    textAlign: TextAlign.center,
+                  child: const Icon(Icons.receipt_long_rounded, color: AppColors.primary),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Tagihan Sewa",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.getTextPrimary(context),
+                        ),
+                      ),
+                      Text(
+                        p['status'].toString().toUpperCase(),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: color),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Text(
+                  _formatCurrency(p['amount']),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.getTextPrimary(context),
+                    fontSize: 16,
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -282,191 +398,83 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // BILLING CARD
-  // ═══════════════════════════════════════════════════════════════
-  Widget _buildBillingCard(BuildContext context, bool isDark) {
+  Widget _buildEmptyState(BuildContext context, String message) {
     return Container(
-      padding: EdgeInsets.all(AppSpacing.cardPadding),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 32),
       decoration: BoxDecoration(
-        color: AppColors.getBackground(context),
-        borderRadius: AppRadius.cardXLRadius,
-        border: Border.all(color: AppColors.getBorder(context)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.getShadow(context, 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Tagihan Bulan Ini",
-                style: AppTypography.h4(context),
-              ),
-              _buildBadge("BELUM LUNAS", AppColors.error),
-            ],
-          ),
-          AppSpacing.gapXL,
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Sewa + Listrik",
-                      style: AppTypography.bodySmall(context),
-                    ),
-                    AppSpacing.gapXXS,
-                    Text(
-                      "Rp 1.250.000",
-                      style: AppTypography.priceStatic.copyWith(
-                        color: AppColors.getTextPrimary(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildPayButton(context),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPayButton(BuildContext context) {
-    return Material(
-      color: AppColors.primaryBlue,
-      borderRadius: AppRadius.buttonRadius,
-      child: InkWell(
-        onTap: () {},
-        borderRadius: AppRadius.buttonRadius,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Text(
-            "Bayar",
-            style: AppTypography.labelLargeStatic.copyWith(
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: AppRadius.badgeRadius,
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        text,
-        style: AppTypography.badgeStatic.copyWith(color: color),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // ACTIVITY TIMELINE
-  // ═══════════════════════════════════════════════════════════════
-  Widget _buildActivityTimeline(BuildContext context, bool isDark) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: BoxDecoration(
-        color: AppColors.getBackground(context),
-        borderRadius: AppRadius.cardXLRadius,
-        border: Border.all(color: AppColors.getBorder(context)),
+        color: AppColors.getSurface(context),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.getBorder(context), style: BorderStyle.solid),
       ),
       child: Column(
         children: [
-          _buildTimelineItem(
-            context,
-            "Laundry Masuk",
-            "3 Kg pakaian sedang diproses.",
-            true,
-          ),
-          Padding(
-            padding: AppSpacing.verticalLG,
-            child: Divider(height: 1, color: AppColors.getDivider(context)),
-          ),
-          _buildTimelineItem(
-            context,
-            "Pembayaran Listrik",
-            "Token berhasil diisi oleh admin.",
-            false,
+          Icon(Icons.verified_outlined, size: 40, color: AppColors.slate300),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: TextStyle(color: AppColors.getTextTertiary(context), fontSize: 14),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildTimelineItem(
-    BuildContext context,
-    String title,
-    String subtitle,
-    bool isNew,
-  ) {
-    return Row(
-      children: [
-        Container(
-          height: 8,
-          width: 8,
-          decoration: BoxDecoration(
-            color: isNew
-                ? AppColors.primaryBlue
-                : AppColors.getTextSecondary(context).withOpacity(0.3),
-            shape: BoxShape.circle,
-          ),
-        ),
-        AppSpacing.hGapLG,
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: AppTypography.labelMedium(context),
-              ),
-              AppSpacing.gapXXS,
-              Text(
-                subtitle,
-                style: AppTypography.caption(context),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+// ================= PRIVATE CLASS UNTUK ANIMASI SHIMMER MANUAL =================
+
+class _CustomShimmerEffect extends StatefulWidget {
+  final Widget child;
+  const _CustomShimmerEffect({required this.child});
+
+  @override
+  State<_CustomShimmerEffect> createState() => _CustomShimmerEffectState();
+}
+
+class _CustomShimmerEffectState extends State<_CustomShimmerEffect> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // SECTION HEADER
-  // ═══════════════════════════════════════════════════════════════
-  Widget _buildSectionHeader(
-    BuildContext context,
-    String title,
-    IconData icon,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppColors.primaryBlue),
-        AppSpacing.hGapSM,
-        Text(
-          title,
-          style: AppTypography.sectionHeader(context),
-        ),
-      ],
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.grey.withOpacity(0.1),
+                Colors.grey.withOpacity(0.3),
+                Colors.grey.withOpacity(0.1),
+              ],
+              stops: [
+                _controller.value - 0.3,
+                _controller.value,
+                _controller.value + 0.3,
+              ],
+            ).createShader(bounds);
+          },
+          child: widget.child,
+        );
+      },
     );
   }
 }

@@ -20,7 +20,7 @@
    "type": "dart",
     "args" :[
      "web-port",
-     "5000"
+     "500"
     ]
   },
   {
@@ -42,6 +42,6 @@
    "type": "dart",
    "deviceId": "chrome"
   }
-
+  
  ]
 }

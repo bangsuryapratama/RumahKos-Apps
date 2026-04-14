@@ -1,9 +1,9 @@
 class Api {
-  // GANTI sesuai environment lo
-  static const String baseUrl =
-      "https://sphereless-maria-nonfibrous.ngrok-free.dev/api/tenant";
-  static const String pubUrl =
-      "https://sphereless-maria-nonfibrous.ngrok-free.dev/api";
+  // ==================
+  // BASE URL
+  // ==================
+  static const String baseUrl = "https://rumahkos.web.id/api/tenant";
+  static const String pubUrl = "https://rumahkos.web.id/api";
 
   // ==================
   // AUTH
@@ -29,6 +29,11 @@ class Api {
   static const String residenceHistory = "$baseUrl/residence/history";
 
   // ==================
+  // DASHBOARD
+  // ==================
+  static const String dashboard = "$baseUrl/dashboard";
+
+  // ==================
   // ROOMS (PUBLIC)
   // ==================
   static const String roomsUrl = "$pubUrl/rooms";
@@ -42,4 +47,9 @@ class Api {
   static String paymentDetail(int id) => "$baseUrl/payments/$id";
   static String createSnap(int id) => "$baseUrl/payments/$id/midtrans";
   static String checkStatus(int id) => "$baseUrl/payments/$id/check-status";
+
+  // ==================
+  // MIDTRANS CALLBACK (OPTIONAL)
+  // ==================
+  static const String midtransCallback = "$pubUrl/payment/midtrans/callback";
 }
